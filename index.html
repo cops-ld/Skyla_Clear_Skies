@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clear Skies Ahead — Skyla Knowledge Check</title>
+<style>
+:root {
+  --orange:#ff6a3d;
+  --navy:#10243f;
+  --green:#2f9c69;
+  --red:#bf3d45;
+  --panel:rgba(255,255,255,.95);
+  --muted:#5e7182;
+}
+* { box-sizing:border-box; }
+html, body {
+  margin:0;
+  min-height:100%;
+  font-family:Segoe UI, Arial, sans-serif;
+  color:var(--navy);
+  background:#8fbfd7;
+}
+button { font:inherit; }
+
+.game {
+  min-height:100vh;
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+}
+.bg-video {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  z-index:0;
+  background:#6fa8c2;
+}
+.scrim {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background:linear-gradient(
+    180deg,
+    rgba(3,14,30,.08) 0%,
+    rgba(3,14,30,.10) 45%,
+    rgba(3,14,30,.45) 100%
+  );
+  pointer-events:none;
+}
+header, main, footer {
+  position:relative;
+  z-index:3;
+}
+header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:13px 20px;
+  background:rgba(8,24,46,.75);
+  color:white;
+  backdrop-filter:blur(5px);
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.star {
+  color:var(--orange);
+  font-size:23px;
+}
+.stage-label {
+  font-size:13px;
+  opacity:.9;
+  margin-top:2px;
+}
+.hud {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  font-size:13px;
+}
+.stability {
+  display:flex;
+  gap:4px;
+  align-items:center;
+}
+.heart {
+  font-size:19px;
+}
+.progress-wrap {
+  min-width:150px;
+}
+.progress-title {
+  font-size:12px;
+  margin-bottom:4px;
+  opacity:.88;
+}
+.progress {
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.22);
+  overflow:hidden;
+}
+.progress span {
+  display:block;
+  height:100%;
+  width:0;
+  background:var(--orange);
+  transition:width .3s ease;
+}
+.music-btn {
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+main {
+  min-height:0;
+  display:grid;
+  grid-template-rows:minmax(285px,1fr) auto;
+  align-items:end;
+  padding:18px 24px 24px;
+}
+.flight-zone {
+  position:relative;
+  min-height:310px;
+  width:100%;
+  overflow:hidden;
+}
+
+.plane {
+  position:absolute;
+  height:auto;
+  filter:drop-shadow(0 14px 18px rgba(0,0,0,.28));
+  pointer-events:none;
+  will-change:transform,right,top,left,opacity;
+}
+
+.plane.intro {
+  width:min(42vw,560px);
+  max-width:64%;
+  left:50%;
+  top:47%;
+  transform:translate(-50%,-50%);
+  opacity:1;
+}
+
+.plane.waiting {
+  width:min(30vw,430px);
+  max-width:48%;
+  right:3%;
+  top:9%;
+  opacity:1;
+  transform:rotate(-1deg);
+}
+
+.plane.fly-correct {
+  width:min(30vw,430px);
+  max-width:48%;
+  right:3%;
+  top:9%;
+  opacity:1;
+  animation:flyCorrect 3.3s linear forwards;
+}
+
+.plane.fly-wrong {
+  width:min(30vw,430px);
+  max-width:48%;
+  right:3%;
+  top:9%;
+  opacity:1;
+  animation:flyWrong 3.6s linear forwards;
+}
+
+@keyframes flyCorrect {
+  0%   { right:3%;  top:9%;  transform:rotate(-1deg); }
+  22%  { top:7%;   transform:rotate(0deg); }
+  50%  { top:10%;  transform:rotate(1deg); }
+  76%  { top:8%;   transform:rotate(0deg); }
+  100% { right:112%; top:9%; transform:rotate(-1deg); }
+}
+
+@keyframes flyWrong {
+  0%   { right:3%;  top:10%; transform:rotate(-4deg); }
+  10%  { top:1%;   transform:rotate(7deg); }
+  20%  { top:24%;  transform:rotate(-8deg); }
+  31%  { top:3%;   transform:rotate(7deg); }
+  43%  { top:27%;  transform:rotate(-7deg); }
+  55%  { top:2%;   transform:rotate(8deg); }
+  68%  { top:25%;  transform:rotate(-6deg); }
+  82%  { top:4%;   transform:rotate(5deg); }
+  100% { right:112%; top:11%; transform:rotate(-4deg); }
+}
+
+.card-wrap {
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+}
+.card {
+  width:min(900px,94vw);
+  background:var(--panel);
+  border-radius:22px;
+  padding:22px 26px 20px;
+  box-shadow:0 18px 50px rgba(4,18,35,.32);
+  backdrop-filter:blur(6px);
+}
+.eyebrow {
+  color:var(--orange);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+}
+h1, h2 {
+  margin:7px 0 10px;
+  line-height:1.16;
+}
+h1 { font-size:36px; }
+h2 { font-size:25px; }
+p {
+  line-height:1.45;
+  margin:9px 0;
+}
+.lead {
+  font-size:17px;
+}
+.choices {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.choice {
+  min-height:82px;
+  width:100%;
+  text-align:left;
+  border:2px solid #d7e3eb;
+  background:white;
+  color:var(--navy);
+  padding:12px 13px;
+  border-radius:14px;
+  cursor:pointer;
+  font-size:14.5px;
+  line-height:1.35;
+  transition:border-color .18s, transform .18s, background .18s;
+}
+.choice:hover {
+  border-color:#69b8d4;
+  transform:translateY(-1px);
+}
+.choice:disabled {
+  cursor:default;
+  transform:none;
+  opacity:.97;
+}
+.choice.correct {
+  border-color:var(--green);
+  background:#eaf8f1;
+}
+.choice.wrong {
+  border-color:var(--red);
+  background:#fdeced;
+}
+.feedback {
+  display:none;
+  margin-top:12px;
+  padding:11px 13px;
+  border-radius:12px;
+  line-height:1.4;
+  font-size:14px;
+  font-weight:650;
+}
+.feedback.good {
+  display:block;
+  background:#e8f7ef;
+  color:#1d6b49;
+}
+.feedback.bad {
+  display:block;
+  background:#fdeaea;
+  color:#8a2d34;
+}
+.actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:13px;
+  justify-content:center;
+}
+.btn {
+  border:0;
+  background:var(--orange);
+  color:#fff;
+  font-weight:850;
+  padding:11px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(255,106,61,.24);
+}
+.result-badge {
+  display:inline-block;
+  border-radius:999px;
+  padding:7px 12px;
+  background:var(--orange);
+  color:#fff;
+  font-weight:850;
+}
+.score {
+  font-size:44px;
+  font-weight:900;
+  margin:6px 0;
+}
+.hidden {
+  display:none!important;
+}
+footer {
+  padding:10px 18px;
+  background:rgba(8,24,46,.78);
+  color:white;
+  text-align:center;
+  font-size:12px;
+}
+
+@media (max-width:900px) {
+  main {
+    grid-template-rows:minmax(210px,1fr) auto;
+    padding:12px;
+  }
+  .flight-zone {
+    min-height:220px;
+  }
+  .plane.intro {
+    width:min(72vw,520px);
+  }
+  .plane.waiting,
+  .plane.fly-correct,
+  .plane.fly-wrong {
+    width:min(50vw,390px);
+    max-width:58%;
+  }
+  .choices {
+    grid-template-columns:1fr;
+  }
+  .choice {
+    min-height:auto;
+  }
+  .card {
+    padding:18px;
+  }
+  h1 { font-size:30px; }
+  h2 { font-size:22px; }
+  header {
+    align-items:flex-start;
+  }
+  .progress-wrap {
+    min-width:110px;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .plane.fly-correct,
+  .plane.fly-wrong {
+    animation:none;
+  }
+}
+</style>
+</head>
+<body>
+<div id="game" class="game">
+  <video id="bgVideo" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+  <div class="scrim"></div>
+
+  <header>
+    <div>
+      <div class="brand"><span class="star">★</span> SKYLA FLIGHT CHECK</div>
+      <div class="stage-label" id="stageLabel">Pre-flight briefing</div>
+    </div>
+    <div class="hud">
+      <div class="stability">Aircraft Stability:
+        <span id="heart1" class="heart">❤️</span>
+        <span id="heart2" class="heart">❤️</span>
+        <span id="heart3" class="heart">❤️</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-title">Progress</div>
+        <div class="progress"><span id="progressBar"></span></div>
+      </div>
+      <button id="musicBtn" class="music-btn" type="button" aria-pressed="false">🔊 Music</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="flight-zone" aria-label="Skyla flight animation">
+      <img id="plane" class="plane intro" src="assets/skyla-plane.png" alt="Skyla airplane">
+    </section>
+
+    <div class="card-wrap">
+      <section class="card">
+        <div id="intro">
+          <div class="eyebrow">Knowledge Check</div>
+          <h1>Clear Skies Ahead</h1>
+          <p class="lead">Guide the Skyla aircraft through changing weather by correctly handling Luggage Delay Compensation Requests.</p>
+          <p><strong>Correct answers</strong> keep the flight smooth. <strong>Wrong answers</strong> create turbulence and reduce aircraft stability.</p>
+          <p>If all 3 stability points are lost, <strong>the flight is cancelled and the aircraft returns to the airport.</strong></p>
+          <div class="actions">
+            <button class="btn" id="startBtn" type="button">Start Flight ✈️</button>
+          </div>
+        </div>
+
+        <div id="quiz" class="hidden">
+          <h2 id="questionText"></h2>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback" aria-live="polite"></div>
+          <div class="actions">
+            <button class="btn hidden" id="nextBtn" type="button">Continue Flight</button>
+          </div>
+        </div>
+
+        <div id="result" class="hidden">
+          <div class="result-badge" id="resultBadge">Flight Complete</div>
+          <h2 id="resultTitle"></h2>
+          <div class="score" id="scoreText"></div>
+          <p id="resultMessage"></p>
+          <div class="actions">
+            <button class="btn" id="restartBtn" type="button">Fly Again</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>Skyla • Luggage Delay Compensation • Interactive Knowledge Check</footer>
+</div>
+
+<script>
+(() => {
+  const videos = {
+    arrival: "assets/successful-arrival.mp4",
+    clear: "assets/clear-skies.mp4",
+    gloomy: "assets/gloomy-sky.mp4",
+    heavy: "assets/heavy-storm.mp4",
+    turbulence: "assets/turbulence.mp4",
+    thunder: "assets/thunderstorm-zone.mp4",
+    cancelled: "assets/cancelled-flight.mp4"
+  };
+
+  const questions = [
+    {
+      zone:"Cloud Zone — Eligibility",
+      bg:"gloomy",
+      q:"A customer reports delayed luggage 48 hours after arriving on a Skyla-partnered flight. What should you do?",
+      choices:[
+        "Proceed to log the compensation request.",
+        "Tell the customer they are not eligible because 48 hours is too late.",
+        "Ask the customer to contact the carrier because all luggage delays belong to the airline."
+      ],
+      answer:0,
+      good:"Smooth flying! Both eligibility conditions are met: Skyla partner carrier and report within 72 hours.",
+      bad:"Turbulence! The request is eligible because it involves a Skyla partner carrier and was reported within 72 hours."
+    },
+    {
+      zone:"Heavy Storm — Existing Claim",
+      bg:"heavy",
+      q:"You find an open claim already exists for the same flight. What is the correct action?",
+      choices:[
+        "Submit a second claim so the customer has a backup.",
+        "Do not submit another claim; share the existing reference number.",
+        "Close the existing claim and create a new one."
+      ],
+      answer:1,
+      good:"Nice navigation! Existing claims must not be duplicated. Share the reference number already on file.",
+      bad:"Heavy weather ahead! Do not create a duplicate claim. Confirm the existing claim is under review and share its reference number."
+    },
+    {
+      zone:"Turbulence — Missing Information",
+      bg:"turbulence",
+      q:"The customer cannot confirm how long the luggage was delayed. What should you enter?",
+      choices:[
+        "Estimate the duration based on the customer's description.",
+        "Enter 1 hour so the form can be submitted.",
+        "Leave the field blank, note it in the ticket, and flag it to the team lead."
+      ],
+      answer:2,
+      good:"Aircraft stable! Never estimate the delay duration on the customer's behalf.",
+      bad:"Turbulence intensifies! If the duration is unknown, leave it blank, note it in the ticket, and flag it to the team lead."
+    },
+    {
+      zone:"Thunderstorm Zone — Filing",
+      bg:"thunder",
+      q:"Which information belongs in the Log Delay Claim form?",
+      choices:[
+        "Delay duration and whether the customer incurred out-of-pocket costs.",
+        "Only the customer's booking number.",
+        "The customer's preferred compensation amount."
+      ],
+      answer:0,
+      good:"You cleared the storm! The form requires the delay duration and whether out-of-pocket costs were incurred.",
+      bad:"Storm warning! The process specifies delay duration and whether the customer had out-of-pocket costs."
+    },
+    {
+      zone:"Final Approach — Confirmation",
+      bg:"heavy",
+      q:"The claim has been submitted successfully. What should happen next?",
+      choices:[
+        "Share the reference number, advise 3–5 business days, and close with the Delay Claim Submitted macro.",
+        "Keep the ticket open until the review is complete.",
+        "Tell the customer to contact the carrier for the claim reference."
+      ],
+      answer:0,
+      good:"Final approach complete! You confirmed the reference, review time, and correct ticket closure.",
+      bad:"Last patch of turbulence! After submission, share the reference number, advise 3–5 business days, and use the Delay Claim Submitted macro."
+    }
+  ];
+
+  const el = id => document.getElementById(id);
+  const bgVideo = el("bgVideo");
+  const intro = el("intro");
+  const quiz = el("quiz");
+  const result = el("result");
+  const startBtn = el("startBtn");
+  const nextBtn = el("nextBtn");
+  const restartBtn = el("restartBtn");
+  const musicBtn = el("musicBtn");
+  const planeEl = el("plane");
+  const questionText = el("questionText");
+  const choices = el("choices");
+  const feedback = el("feedback");
+  const stageLabel = el("stageLabel");
+  const progressBar = el("progressBar");
+  const resultBadge = el("resultBadge");
+  const resultTitle = el("resultTitle");
+  const scoreText = el("scoreText");
+  const resultMessage = el("resultMessage");
+
+  let index = 0;
+  let stability = 3;
+  let score = 0;
+  let answered = false;
+
+  let audioCtx = null;
+  let master = null;
+  let musicTimer = null;
+  let musicMuted = false;
+  let beat = 0;
+
+  async function setVideo(key) {
+    bgVideo.pause();
+    bgVideo.src = videos[key];
+    bgVideo.load();
+    try {
+      await bgVideo.play();
+    } catch (e) {
+      // Muted autoplay should work in modern browsers; if blocked,
+      // playback will begin on the next user interaction.
+    }
+  }
+
+  function setPlaneIntro() {
+    planeEl.style.opacity = "";
+    planeEl.className = "plane intro";
+  }
+
+  function setPlaneWaiting() {
+    planeEl.style.opacity = "";
+    planeEl.className = "plane waiting";
+  }
+
+
+  function playFlybySound(durationMs) {
+    if (!audioCtx || !master || musicMuted) return;
+
+    const now = audioCtx.currentTime;
+    const duration = durationMs / 1000;
+
+    // Engine tone
+    const engine = audioCtx.createOscillator();
+    const engineGain = audioCtx.createGain();
+    const engineFilter = audioCtx.createBiquadFilter();
+    engine.type = "sawtooth";
+    engine.frequency.setValueAtTime(110, now);
+    engine.frequency.exponentialRampToValueAtTime(85, now + duration);
+    engineFilter.type = "lowpass";
+    engineFilter.frequency.value = 650;
+
+    engineGain.gain.setValueAtTime(0.0001, now);
+    engineGain.gain.exponentialRampToValueAtTime(0.09, now + 0.15);
+    engineGain.gain.setValueAtTime(0.09, now + Math.max(0.2, duration - 0.3));
+    engineGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    engine.connect(engineFilter).connect(engineGain).connect(master);
+
+    // Air rush / fly-by noise
+    const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.45;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    const noiseFilter = audioCtx.createBiquadFilter();
+    const noiseGain = audioCtx.createGain();
+    noise.buffer = noiseBuffer;
+    noiseFilter.type = "bandpass";
+    noiseFilter.frequency.setValueAtTime(900, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(500, now + duration);
+    noiseFilter.Q.value = 0.8;
+
+    noiseGain.gain.setValueAtTime(0.0001, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.07, now + 0.18);
+    noiseGain.gain.setValueAtTime(0.07, now + Math.max(0.2, duration - 0.35));
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    noise.connect(noiseFilter).connect(noiseGain).connect(master);
+
+    engine.start(now);
+    engine.stop(now + duration + 0.05);
+    noise.start(now);
+    noise.stop(now + duration + 0.05);
+  }
+
+  function flyPlane(correct) {
+    planeEl.className = "plane waiting";
+    void planeEl.offsetWidth;
+    planeEl.classList.remove("waiting");
+    planeEl.classList.add(correct ? "fly-correct" : "fly-wrong");
+
+    const duration = correct ? 3300 : 3600;
+    playFlybySound(duration);
+    window.setTimeout(() => {
+      if (stability <= 0) {
+        nextBtn.textContent = "Return to Airport";
+      } else if (index === questions.length - 1) {
+        nextBtn.textContent = "Reach Clear Skies";
+      } else {
+        nextBtn.textContent = "Continue Flight";
+      }
+      nextBtn.classList.remove("hidden");
+    }, duration + 100);
+  }
+
+  function updateHUD() {
+    for (let i = 1; i <= 3; i++) {
+      el("heart" + i).textContent = i <= stability ? "❤️" : "🖤";
+    }
+    progressBar.style.width = `${Math.round((index / questions.length) * 100)}%`;
+  }
+
+  async function showQuestion() {
+    answered = false;
+    nextBtn.classList.add("hidden");
+    feedback.className = "feedback";
+    feedback.textContent = "";
+
+    const item = questions[index];
+    await setVideo(item.bg);
+    setPlaneWaiting();
+
+    stageLabel.textContent = `Question ${index + 1} of ${questions.length}`;
+    questionText.textContent = item.q;
+    choices.innerHTML = "";
+
+    item.choices.forEach((text, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "choice";
+      b.textContent = text;
+      b.addEventListener("click", () => selectAnswer(b, i));
+      choices.appendChild(b);
+    });
+
+    updateHUD();
+  }
+
+  function selectAnswer(button, choiceIndex) {
+    if (answered) return;
+    answered = true;
+
+    const item = questions[index];
+    const all = [...document.querySelectorAll(".choice")];
+    all.forEach(b => b.disabled = true);
+    nextBtn.classList.add("hidden");
+
+    const correct = choiceIndex === item.answer;
+
+    if (correct) {
+      button.classList.add("correct");
+      feedback.className = "feedback good";
+      feedback.textContent = "✅ " + item.good;
+      score++;
+    } else {
+      button.classList.add("wrong");
+      all[item.answer].classList.add("correct");
+      feedback.className = "feedback bad";
+      feedback.textContent = "⚠️ " + item.bad;
+      stability--;
+    }
+
+    updateHUD();
+    flyPlane(correct);
+  }
+
+  async function finish(cancelled = false) {
+    intro.classList.add("hidden");
+    quiz.classList.add("hidden");
+    result.classList.remove("hidden");
+
+    if (cancelled) {
+      await setVideo("cancelled");
+      planeEl.className = "plane";
+      planeEl.style.opacity = "0";
+      stageLabel.textContent = "Flight Cancelled — Returning to Airport";
+      resultBadge.textContent = "Flight Cancelled";
+      resultTitle.textContent = "✈️ Return to the Airport";
+      scoreText.textContent = `${score} correct`;
+      resultMessage.textContent =
+        "Conditions became too unstable to continue safely. The flight has been cancelled, and the aircraft is returning to the airport. Review the luggage-delay flow, then try the journey again.";
+    } else {
+      await setVideo("arrival");
+      planeEl.className = "plane";
+      planeEl.style.opacity = "0";
+      stageLabel.textContent = "Successful Arrival";
+      progressBar.style.width = "100%";
+      resultBadge.textContent = "Flight Complete";
+      resultTitle.textContent = "🎉 Congratulations! You’ve Arrived!";
+      scoreText.textContent = `${score} / ${questions.length}`;
+      resultMessage.textContent =
+        score === questions.length
+          ? "Congratulations! You successfully navigated every luggage-delay decision and guided the flight safely to its destination. You’ve now landed at the airport — ready to handle the process with confidence."
+          : "Congratulations! You made it through the journey and landed safely. Review any turbulence points so you’re even more prepared to handle the luggage-delay process with confidence.";
+    }
+  }
+
+  async function reset() {
+    index = 0;
+    stability = 3;
+    score = 0;
+    answered = false;
+
+    await setVideo("clear");
+    setPlaneIntro();
+
+    intro.classList.remove("hidden");
+    quiz.classList.add("hidden");
+    result.classList.add("hidden");
+
+    stageLabel.textContent = "Pre-flight briefing";
+    progressBar.style.width = "0%";
+    updateHUD();
+  }
+
+  function scheduleTone(freq, start, duration, volume, type = "triangle") {
+    if (!audioCtx || !master || musicMuted) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    osc.connect(gain).connect(master);
+    osc.start(start);
+    osc.stop(start + duration + 0.03);
+  }
+
+  function playBeat() {
+    if (!audioCtx || musicMuted) return;
+    const now = audioCtx.currentTime + 0.03;
+    const melody = [261.63,329.63,392.00,523.25,392.00,329.63,293.66,392.00];
+    scheduleTone(melody[beat % melody.length], now, 0.15, 0.13, "triangle");
+    if (beat % 4 === 0) scheduleTone(130.81, now, 0.25, 0.06, "sine");
+    beat++;
+  }
+
+  async function startMusic() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      master = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 1800;
+      master.gain.value = 0.04;
+      master.connect(filter).connect(audioCtx.destination);
+    }
+    if (audioCtx.state === "suspended") await audioCtx.resume();
+
+    musicMuted = false;
+    musicBtn.textContent = "🔊 Music";
+    musicBtn.setAttribute("aria-pressed", "false");
+
+    if (!musicTimer) {
+      playBeat();
+      musicTimer = setInterval(playBeat, 240);
+    }
+  }
+
+  function toggleMusic() {
+    if (!audioCtx) {
+      startMusic();
+      return;
+    }
+    musicMuted = !musicMuted;
+    if (master) master.gain.value = musicMuted ? 0 : 0.04;
+    musicBtn.textContent = musicMuted ? "🔇 Muted" : "🔊 Music";
+    musicBtn.setAttribute("aria-pressed", musicMuted ? "true" : "false");
+  }
+
+  startBtn.addEventListener("click", async () => {
+    await startMusic();
+    intro.classList.add("hidden");
+    quiz.classList.remove("hidden");
+    index = 0;
+    await showQuestion();
+  });
+
+  nextBtn.addEventListener("click", async () => {
+    if (stability <= 0) {
+      await finish(true);
+      return;
+    }
+
+    index++;
+    if (index >= questions.length) {
+      await finish(false);
+    } else {
+      await showQuestion();
+    }
+  });
+
+  restartBtn.addEventListener("click", reset);
+  musicBtn.addEventListener("click", toggleMusic);
+
+  reset();
+})();
+</script>
+</body>
+</html>
